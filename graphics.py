@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -5,6 +6,7 @@ import matplotlib.ticker as mticker
 
 # Reporte de barras (sumatoria)
 def bar_graphic_v_1(
+        project_address,
         df,
         date,
         group_by,
@@ -70,13 +72,15 @@ def bar_graphic_v_1(
         ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{x:,.0f}'))
 
         plt.tight_layout(pad=2)
-        plt.savefig(f'bar_{group_by}_{indicator}.png')
+        filename = f'barh_{group_by}_{indicator}.png'
+        plt.savefig(os.path.join(project_address, filename), dpi=300)
         plt.show()
     except:
         print(f'Cantidad de datos: {len(df)}')
         print('No hay datos (Probablemente un domingo o festivo o no hubo rechazos)')
 
 def bar_graphic_v_2(
+        project_address,
         df,
         date,
         group_by,
@@ -134,7 +138,7 @@ def bar_graphic_v_2(
 
         # Guardar
         filename = f'barh_{group_by}_{indicator}.png'
-        plt.savefig(filename, dpi=300)
+        plt.savefig(os.path.join(project_address, filename), dpi=300)
         #plt.show()
 
     except Exception as e:
@@ -143,6 +147,7 @@ def bar_graphic_v_2(
 
 # Reporte circular (porcentual)
 def circle_graphic(
+        project_address,
         df,
         date,
         group_by,
@@ -197,7 +202,8 @@ def circle_graphic(
         # Ajuste manual del layout sin usar tight_layout
         plt.subplots_adjust(left=0.05, right=0.75, top=0.95, bottom=0.1)
         
-        plt.savefig(f'circle_{group_by}_{indicator}.png', bbox_inches='tight')
+        filename = f'circle_{group_by}_{indicator}.png', bbox_inches='tight'
+        plt.savefig(os.path.join(project_address, filename), dpi=300)
         #plt.show()
     except:
         print(f'Cantidad de datos: {len(df)}')

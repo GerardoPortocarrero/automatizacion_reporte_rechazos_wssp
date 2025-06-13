@@ -10,7 +10,7 @@ def parse_date(file, df):
     return df
 
 # REPORTES
-def report_configuration(df, report, date):
+def report_configuration(project_address, df, report, date):
     # CONFIGURACION GENERAL
     bar_width = 12
     bar_height = 7
@@ -28,6 +28,7 @@ def report_configuration(df, report, date):
     indicator = 'Venta Perdida CF'
     title = group_by.upper()
     myg.bar_graphic_v_2(
+        project_address,
         df,
         date,
         group_by,
@@ -38,6 +39,7 @@ def report_configuration(df, report, date):
         bar_color_1
     )
     # myg.circle_graphic(
+    #     project_address,
     #     df,
     #     date,
     #     group_by,
@@ -50,9 +52,9 @@ def report_configuration(df, report, date):
     # )
 
 # Funcion principal
-def main(df, document, date):
+def main(project_address, df, document, date):
     importlib.reload(myg)
     
     # Calling graphic generators
     for report in document['reports']:
-        report_configuration(df, report, date)
+        report_configuration(project_address, df, report, date)
