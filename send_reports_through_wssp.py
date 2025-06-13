@@ -43,7 +43,7 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
         clip_button = driver.find_element(By.XPATH, f"//span[@title='{group_name}']")
         clip_button.click()
         print(f"\n[✓] Click realizado en el grupo: '{group_name}'")
-        time.sleep(2)
+        time.sleep(3)
 
         for graph_name, graph_address in graphics.items():            
             # Esperar hasta que el ícono del clip esté presente y visible            
