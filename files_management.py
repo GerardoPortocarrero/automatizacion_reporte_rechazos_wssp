@@ -37,13 +37,13 @@ def file_processing(file, output_file_name, locaciones, project_address):
     delete_unnecessary_symbols(file['file_name'], output_file_name, project_address)
 
     df = pd.read_csv(os.path.join(project_address, output_file_name))
-    print(df.info())
+    #print(df.info())
 
     df = get_relevant_columns(df, file)
-    print(df.info())
+    #print(df.info())
 
     df = get_relevant_locations(df, locaciones)
-    print(df.info())
+    #print(df.info())
 
     df = adjust_values(df)
     print(df.info())
