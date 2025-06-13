@@ -46,35 +46,35 @@ def file_processing(file, output_file_name, locaciones, project_address):
     #print(df.info())
 
     df = adjust_values(df)
-    print(df.info())
+    #print(df.info())
 
     return df
 
 # Filtrar por tiempo
 def get_specific_date(df, file, time_option):
     if time_option == 1:
-        date = input("año: ")
+        date = input("\n>> Año (yyyy): ")
         started_date = pd.to_datetime('01/01/'+str(date), format='%d/%m/%Y')
         ended_date = pd.to_datetime('31/12/'+str(date), format='%d/%m/%Y')
         df = df[(df[file['date']] >= started_date) & (df[file['date']] <= ended_date)]
     elif time_option == 2:
-        date = input("mes/año: ")
+        date = input("\n>> Mes/Año (m/yyyy): ")
         month, year = date.split('/')
         started_date = pd.to_datetime('01/'+str(month)+'/'+str(year), format='%d/%m/%Y')
         ended_date = pd.to_datetime('01/'+str(int(month)+1)+'/'+str(year), format='%d/%m/%Y')
         df = df[(df[file['date']] >= started_date) & (df[file['date']] < ended_date)]
     elif time_option == 3:
-        date = input("dia/mes/año: ")
+        date = input("\n>> Día/Mes/Año (d/m/yyyy): ")
         fecha_corte = pd.to_datetime(str(date), format='%d/%m/%Y')
         df = df[df[file['date']] == fecha_corte]
     elif time_option == 4:
-        date = input("dia/mes/año dia/mes/año: ")
+        date = input("\n>> (d/m/yyyy d/m/yyyy): ")
         started_date, ended_date = date.split(' ')
         started_date = pd.to_datetime(str(started_date), format='%d/%m/%Y')
         ended_date = pd.to_datetime(str(ended_date), format='%d/%m/%Y')
         df = df[(df[file['date']] >= started_date) & (df['Día'] <= ended_date)]
     elif time_option == 5:
-        date = input("dia/mes/año: ")
+        date = input("\n>> Día/Mes/Año (d/m/yyyy): ")
         fecha_corte = pd.to_datetime(str(date), format='%d/%m/%Y')
         df = df[df[file['date']] >= fecha_corte]
 
