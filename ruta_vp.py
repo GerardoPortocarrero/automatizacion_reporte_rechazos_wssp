@@ -12,7 +12,7 @@ def parse_date(file, df):
 # REPORTES
 def report_configuration(df, report, date):
     # CONFIGURACION GENERAL
-    bar_width = 10
+    bar_width = 11
     bar_height = 7
     bar_fontsize = 12
     circle_fontsize = 14
