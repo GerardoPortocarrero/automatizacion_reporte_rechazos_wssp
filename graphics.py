@@ -4,7 +4,7 @@ from matplotlib import cm
 import matplotlib.ticker as mticker
 
 # Reporte de barras (sumatoria)
-def bar_graphic(
+def bar_graphic_v_1(
         df,
         date,
         group_by,
@@ -75,6 +75,71 @@ def bar_graphic(
     except:
         print(f'Cantidad de datos: {len(df)}')
         print('No hay datos (Probablemente un domingo o festivo o no hubo rechazos)')
+
+def bar_graphic_v_2(
+        df,
+        date,
+        group_by,
+        indicator,
+        bar_width,
+        bar_height,
+        bar_fontsize,
+        bar_color
+    ):
+    try:
+        group_by_indicator = df.groupby(group_by)[indicator].sum().sort_values(ascending=True)
+
+        fig, ax = plt.subplots(figsize=(bar_width, bar_height))
+
+        # Dibujar barras
+        bars = ax.barh(
+            group_by_indicator.index,
+            group_by_indicator.values,
+            color=bar_color,
+            edgecolor='black',
+            linewidth=0.6
+        )
+
+        # Texto en barras
+        for bar in bars:
+            width = bar.get_width()
+            ax.annotate(
+                f'{width:,.1f} CF',
+                xy=(width, bar.get_y() + bar.get_height() / 2),
+                xytext=(5, 0),
+                textcoords='offset points',
+                ha='left', va='center',
+                fontsize=bar_fontsize
+            )
+
+        # Texto resumen
+        total = group_by_indicator.sum()
+        ax.text(
+            1, 0.15,
+            f'Fecha: {date}\n\nTotal: {total:,.1f} CF',
+            transform=ax.transAxes,
+            ha='right', va='top',
+            fontsize=bar_fontsize,
+            bbox=dict(facecolor='white', edgecolor='gray', boxstyle='round,pad=0.3')
+        )
+
+        # Estética
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.grid(axis='x', linestyle='--', alpha=0.3)
+        ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{x:,.0f}'))
+        plt.yticks(fontsize=bar_fontsize)
+        plt.xticks(fontsize=bar_fontsize)
+        plt.tight_layout(pad=2)
+
+        # Guardar
+        filename = f'barh_{group_by}_{indicator}.png'
+        plt.savefig(filename, dpi=300)
+        plt.show()
+
+    except Exception as e:
+        print(f'Cantidad de datos: {len(df)}')
+        print('❌ Error en la generación del gráfico:', e)
 
 # Reporte circular (porcentual)
 def circle_graphic(

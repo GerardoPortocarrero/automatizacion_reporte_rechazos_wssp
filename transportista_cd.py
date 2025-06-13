@@ -27,7 +27,7 @@ def report_configuration(df, report, date):
     group_by = report
     indicator = 'Carga Pvta CF'
     title = group_by.upper()
-    myg.bar_graphic(
+    myg.bar_graphic_v_2(
         df,
         date,
         group_by,
@@ -37,17 +37,17 @@ def report_configuration(df, report, date):
         bar_fontsize,
         bar_color_1
     )
-    myg.circle_graphic(
-        df,
-        date,
-        group_by,
-        indicator,
-        circle_width,
-        circle_height,
-        circle_fontsize,
-        circle_legend_fontsize,
-        circle_legend_nro_columns
-    )
+    # myg.circle_graphic(
+    #     df,
+    #     date,
+    #     group_by,
+    #     indicator,
+    #     circle_width,
+    #     circle_height,
+    #     circle_fontsize,
+    #     circle_legend_fontsize,
+    #     circle_legend_nro_columns
+    # )
 
 # Funcion principal
 def main(df, document, date):

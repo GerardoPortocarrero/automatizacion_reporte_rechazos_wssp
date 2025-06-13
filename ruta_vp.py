@@ -12,9 +12,9 @@ def parse_date(file, df):
 # REPORTES
 def report_configuration(df, report, date):
     # CONFIGURACION GENERAL
-    bar_width = 11
+    bar_width = 12
     bar_height = 7
-    bar_fontsize = 12
+    bar_fontsize = 11
     circle_fontsize = 14
     circle_legend_fontsize = 10
     circle_legend_nro_columns = 1
@@ -27,7 +27,7 @@ def report_configuration(df, report, date):
     group_by = report
     indicator = 'Venta Perdida CF'
     title = group_by.upper()
-    myg.bar_graphic(
+    myg.bar_graphic_v_2(
         df,
         date,
         group_by,
