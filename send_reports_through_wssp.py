@@ -75,6 +75,7 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
             time.sleep(3)
 
     finally:
+        print(f'✅ Reportes enviados correctamente')
         driver.quit()
 
     print("'-----------------------------------------------------------------------'")
