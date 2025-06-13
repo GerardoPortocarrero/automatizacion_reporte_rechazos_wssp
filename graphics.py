@@ -135,7 +135,7 @@ def bar_graphic_v_2(
         # Guardar
         filename = f'barh_{group_by}_{indicator}.png'
         plt.savefig(filename, dpi=300)
-        plt.show()
+        #plt.show()
 
     except Exception as e:
         print(f'Cantidad de datos: {len(df)}')
@@ -197,9 +197,8 @@ def circle_graphic(
         # Ajuste manual del layout sin usar tight_layout
         plt.subplots_adjust(left=0.05, right=0.75, top=0.95, bottom=0.1)
         
-        #plt.tight_layout()
         plt.savefig(f'circle_{group_by}_{indicator}.png', bbox_inches='tight')
-        plt.show()
+        #plt.show()
     except:
         print(f'Cantidad de datos: {len(df)}')
         print('No hay datos (Probablemente un domingo o festivo o no hubo rechazos)')
