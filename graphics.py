@@ -202,8 +202,8 @@ def circle_graphic(
         # Ajuste manual del layout sin usar tight_layout
         plt.subplots_adjust(left=0.05, right=0.75, top=0.95, bottom=0.1)
         
-        filename = f'circle_{group_by}_{indicator}.png', bbox_inches='tight'
-        plt.savefig(os.path.join(project_address, filename), dpi=300)
+        filename = f'circle_{group_by}_{indicator}.png'
+        plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches='tight')
         #plt.show()
     except:
         print(f'Cantidad de datos: {len(df)}')
