@@ -29,8 +29,8 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
         print("[*] Esperando a que cargue la página")
 
         WebDriverWait(driver, 15) # 15 segundos para que se cargue la pagina
-        print("[*] Pagina cargada (10 seg de renderizado) ...")
-        time.sleep(10) # 10 segundos adicionales para renderizado de la pagina
+        print("[*] Pagina cargada (15 seg de renderizado) ...")
+        time.sleep(15) # 15 segundos adicionales para renderizado de la pagina
 
         # Buscar grupo
         search_box = driver.find_element(By.XPATH, "//div[@contenteditable='true'][@data-tab='3']")
@@ -78,7 +78,7 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
         print(f'\n✅ Reportes enviados correctamente')
         driver.quit()
 
-    print("'-----------------------------------------------------------------------'")
+    print("'-----------------------------------------------------------------------'\n")
 
 # Captura de graficos de Power Bi por pagina
 def main(project_address, WSSP_CONFIF):
