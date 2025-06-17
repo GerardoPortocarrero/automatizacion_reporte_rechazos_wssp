@@ -10,11 +10,12 @@ def parse_date(file, df):
     return df
 
 # REPORTES
-def report_configuration(df, report, date):
+def report_configuration(project_address, df, report, date):
     # CONFIGURACION GENERAL
     bar_width = 10
     bar_height = 7
-    bar_fontsize = 12
+    bar_label = 16
+    bar_fontsize = 19
     bar_color_1 = "#D32F2F"
     bar_color_2 = "#F57C00"
     bar_color_3 = "#B71C1C"
@@ -26,20 +27,22 @@ def report_configuration(df, report, date):
     indicator = 'Carga Pvta CF'
     title = group_by.upper()
     myg.bar_graphic_v_3(
+        project_address,
         df,
         date,
         group_by,
         indicator,
         bar_width,
         bar_height,
+        bar_label,
         bar_fontsize,
         bar_color_1
     )
 
 # Funcion principal
-def main(df, document, date):
+def main(project_address, df, document, date):
     importlib.reload(myg)
     
     # Calling graphic generators
     for report in document['reports']:
-        report_configuration(df, report, date)
+        report_configuration(project_address, df, report, date)
