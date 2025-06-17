@@ -2,7 +2,7 @@ from tabulate import tabulate
 
 # Mostrar informacion del dataframe
 def show_df(df):
-    print("📊 Resumen de DataFrame:")
+    print("\n📊 Resumen de DataFrame:")
     for col in df.columns:
         print(f"{col:<20} {df[col].dtype}")
     print(f"\n🔢 Dimensión: {df.shape[0]} filas × {df.shape[1]} columnas")
