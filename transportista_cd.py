@@ -15,19 +15,17 @@ def report_configuration(df, report, date):
     bar_width = 10
     bar_height = 7
     bar_fontsize = 12
-    circle_fontsize = 14
-    circle_legend_fontsize = 10
-    circle_legend_nro_columns = 1
-    bar_color_1 = "#c31432"
-    bar_color_2 = "#240b36"
-    circle_width = 7
-    circle_height = 7
+    bar_color_1 = "#D32F2F"
+    bar_color_2 = "#F57C00"
+    bar_color_3 = "#B71C1C"
+    bar_color_4 = "#FFC107"
+    bar_color_5 = "#424242"
 
     # CONFIGURACION DE GRAFICO
     group_by = report
     indicator = 'Carga Pvta CF'
     title = group_by.upper()
-    myg.bar_graphic_v_2(
+    myg.bar_graphic_v_3(
         df,
         date,
         group_by,
@@ -37,17 +35,6 @@ def report_configuration(df, report, date):
         bar_fontsize,
         bar_color_1
     )
-    # myg.circle_graphic(
-    #     df,
-    #     date,
-    #     group_by,
-    #     indicator,
-    #     circle_width,
-    #     circle_height,
-    #     circle_fontsize,
-    #     circle_legend_fontsize,
-    #     circle_legend_nro_columns
-    # )
 
 # Funcion principal
 def main(df, document, date):

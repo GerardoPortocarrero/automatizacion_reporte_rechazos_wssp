@@ -79,6 +79,7 @@ def bar_graphic_v_1(
         print(f'Cantidad de datos: {len(df)}')
         print('No hay datos (Probablemente un domingo o festivo o no hubo rechazos)')
 
+# Reporte de barras horizontal
 def bar_graphic_v_2(
         project_address,
         df,
@@ -145,66 +146,80 @@ def bar_graphic_v_2(
         print(f'Cantidad de datos: {len(df)}')
         print('❌ Error en la generación del gráfico:', e)
 
-# Reporte circular (porcentual)
-def circle_graphic(
+# Reporte de barras horizontal
+def bar_graphic_v_3(
         project_address,
         df,
         date,
         group_by,
         indicator,
-        circle_width,
-        circle_height,
-        circle_fontsize,
-        circle_legend_fontsize,
-        circle_legend_nro_columns
+        bar_width,
+        bar_height,
+        bar_label,
+        bar_fontsize,
+        bar_color
     ):
     try:
-        # Agrupar y ordenar por venta perdida
-        group_by_indicator = df.groupby(group_by)[indicator].sum().sort_values(ascending=False)
+        group_by_indicator = df.groupby(group_by)[indicator].sum().sort_values(ascending=True)
 
-        # (Opcional) Limitar a los 10 principales si el analisis es anual
-        # group_by_indicator = group_by_indicator.head(10)
+        fig, ax = plt.subplots(figsize=(bar_width, bar_height))
 
-        # Crear gráfico circular
-        fig, ax = plt.subplots(figsize=(circle_width, circle_height))
-
-        # Colores suaves y explosion del sector más grande
-        colors = cm.get_cmap('tab20')(np.linspace(0, 1, len(group_by_indicator)))
-        explode = [0.05 if i == 0 else 0 for i in range(len(group_by_indicator))]
-        
-        # Crear pie chart sin etiquetas directamente en el gráfico
-        wedges, texts, autotexts = ax.pie(
-            group_by_indicator,
-            labels=None,              # Sin etiquetas en el gráfico
-            autopct=lambda p: f'{p:.1f}%' if p > 2 else '',
-            startangle=145,
-            counterclock=False,
-            textprops={'fontsize': circle_fontsize}, # Tamaño de texto
-            explode=explode,
-            colors=colors
-        )
-
-        for autotext in autotexts:
-            autotext.set_color('white')
-            autotext.set_fontweight('bold')
-
-        # Agregar leyenda con los nombres de los motivos de anulación
-        ax.legend(
-            wedges,
+        # Elegante color Coca-Cola rojo + borde gris tenue
+        bars = ax.barh(
             group_by_indicator.index,
-            loc='center left',
-            bbox_to_anchor=(0.95, 0.5),  # a la derecha del gráfico, centrado verticalmente
-            fontsize=circle_legend_fontsize,
-            ncol=circle_legend_nro_columns,
-            frameon=False  # sin borde
+            group_by_indicator.values,
+            color=bar_color,  # puede ser "#D52B1E" u otro rojo Coca-Cola
+            edgecolor='#333333',
+            linewidth=0.5
         )
 
-        # Ajuste manual del layout sin usar tight_layout
-        plt.subplots_adjust(left=0.05, right=0.75, top=0.95, bottom=0.1)
-        
-        filename = f'circle_{group_by}_{indicator}.png'
+        # Etiquetas dentro o al lado
+        for bar in bars:
+            width = bar.get_width()
+            ax.annotate(
+                f'{width:,.1f} CF',
+                xy=(width, bar.get_y() + bar.get_height() / 2),
+                xytext=(5, 0),
+                textcoords='offset points',
+                ha='left', va='center',
+                fontsize=bar_fontsize,
+                color='black'
+            )
+
+        # Cuadro resumen discreto
+        total = group_by_indicator.sum()
+        ax.text(
+            0.80, 0.20,
+            f"{date}\n\nTotal: {total:,.1f} CF",
+            transform=ax.transAxes,
+            fontsize=bar_label,
+            va='top', ha='left',
+            bbox=dict(facecolor='#f9f9f9', edgecolor='gray', boxstyle='round,pad=0.4', alpha=0.95)
+        )
+
+        # Estética general
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+
+        ax.tick_params(axis='x', labelsize=bar_label)
+        ax.tick_params(axis='y', labelsize=bar_label)
+
+        ax.grid(axis='x', linestyle='--', linewidth=0.5, alpha=0.3)
+        ax.set_xlabel("")  # sin título innecesario
+        ax.set_ylabel("")
+
+        ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{x:,.0f}'))
+
+        # Margen ajustado para WhatsApp (sin cortar texto)
+        plt.tight_layout(rect=[0, 0, 0.95, 0.93], pad=2)
+
+        # Guardar con alta calidad
+        filename = f'barh_{group_by}_{indicator}.png'
         plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches='tight')
-        #plt.show()
-    except:
+        # plt.show()
+
+    except Exception as e:
         print(f'Cantidad de datos: {len(df)}')
-        print('No hay datos (Probablemente un domingo o festivo o no hubo rechazos)')
+        print('❌ Error en la generación del gráfico:', e)
