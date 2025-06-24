@@ -1,20 +1,6 @@
 import os
 import pandas as pd
 
-# Eliminar "comas" por "espacio en blanco" y "punto y coma" por "coma"
-def delete_unnecessary_symbols(file_name, output_file_name, project_address):
-    # Abrir, leer y modificar el contenido del archivo
-    with open(os.path.join(project_address, file_name), "r", encoding="utf-8") as f:
-        contenido = f.read()
-
-    # Reemplazos: primero las comas por espacio, luego los puntos y coma por coma
-    contenido = contenido.replace(",", " ")
-    contenido = contenido.replace(";", ",")
-
-    # Guardar el contenido modificado en un nuevo archivo
-    with open(os.path.join(project_address, output_file_name), "w", encoding="utf-8") as f:
-        f.write(contenido)
-
 # Eliminar todas las columnas excepto las relevantes
 def get_relevant_columns(df, file):
     return df[file['relevant_columns']]
@@ -33,10 +19,8 @@ def adjust_values(df):
         return df
     
 # Preparar archivo para analizar
-def file_processing(file, output_file_name, locaciones, project_address):
-    delete_unnecessary_symbols(file['file_name'], output_file_name, project_address)
-
-    df = pd.read_csv(os.path.join(project_address, output_file_name))
+def file_processing(file, locaciones, root_address):
+    df = pd.read_csv(os.path.join(root_address, file['file_name']), sep=';')
     #print(df.info())
 
     df = get_relevant_columns(df, file)
@@ -54,28 +38,28 @@ def file_processing(file, output_file_name, locaciones, project_address):
 def get_specific_date(df, file, time_option):
     if time_option == 1:
         date = input("\n>> Año (yyyy): ")
-        started_date = pd.to_datetime('01/01/'+str(date), format='%d/%m/%Y')
-        ended_date = pd.to_datetime('31/12/'+str(date), format='%d/%m/%Y')
+        started_date = pd.to_datetime(str(date)+'-01-01', format='%Y-%m-%d')
+        ended_date = pd.to_datetime(str(date)+'-12/31/', format='%Y-%m-%d')
         df = df[(df[file['date']] >= started_date) & (df[file['date']] <= ended_date)]
     elif time_option == 2:
         date = input("\n>> Mes/Año (m/yyyy): ")
         month, year = date.split('/')
-        started_date = pd.to_datetime('01/'+str(month)+'/'+str(year), format='%d/%m/%Y')
-        ended_date = pd.to_datetime('01/'+str(int(month)+1)+'/'+str(year), format='%d/%m/%Y')
+        started_date = pd.to_datetime(str(year)+'-'+str(month)+'-01', format='%Y-%m-%d')
+        ended_date = pd.to_datetime(str(year)+'-'+str(int(month)+1)+'-01', format='%Y-%m-%d')
         df = df[(df[file['date']] >= started_date) & (df[file['date']] < ended_date)]
     elif time_option == 3:
-        date = input("\n>> Día/Mes/Año (d/m/yyyy): ")
-        fecha_corte = pd.to_datetime(str(date), format='%d/%m/%Y')
+        date = input("\n>> Año-Mes-Dia (yyyy-m-d): ")
+        fecha_corte = pd.to_datetime(str(date), format='%Y-%m-%d')
         df = df[df[file['date']] == fecha_corte]
     elif time_option == 4:
-        date = input("\n>> (d/m/yyyy d/m/yyyy): ")
+        date = input("\n>> (yyyy-m-d yyyy-m-d): ")
         started_date, ended_date = date.split(' ')
-        started_date = pd.to_datetime(str(started_date), format='%d/%m/%Y')
-        ended_date = pd.to_datetime(str(ended_date), format='%d/%m/%Y')
+        started_date = pd.to_datetime(str(started_date), format='%Y-%m-%d')
+        ended_date = pd.to_datetime(str(ended_date), format='%Y-%m-%d')
         df = df[(df[file['date']] >= started_date) & (df['Día'] <= ended_date)]
     elif time_option == 5:
-        date = input("\n>> Día/Mes/Año (d/m/yyyy): ")
-        fecha_corte = pd.to_datetime(str(date), format='%d/%m/%Y')
+        date = input("\n>> Año-Mes-Dia (yyyy-m-d): ")
+        fecha_corte = pd.to_datetime(str(date), format='%Y-%m-%d')
         df = df[df[file['date']] >= fecha_corte]
 
     return df, date

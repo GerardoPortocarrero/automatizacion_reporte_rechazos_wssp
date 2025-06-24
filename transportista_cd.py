@@ -5,8 +5,8 @@ import graphics as myg
 import importlib
 
 # Parsear la fecha
-def parse_date(file, df):    
-    df[file['date']] = pd.to_datetime(df[file['date']], format='%d/%m/%Y')
+def parse_date(document, df):
+    df[document['date']] = pd.to_datetime(df[document['date']], format='%d/%m/%Y')
     return df
 
 # REPORTES
