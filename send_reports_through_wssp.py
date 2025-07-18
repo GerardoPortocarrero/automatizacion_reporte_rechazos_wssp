@@ -64,7 +64,8 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
 
             # Escribir texto junto a la imagen
             caption_box = driver.find_element(By.XPATH, "//div[@contenteditable='true' and @aria-label='Añade un comentario']")
-            print(f'[*] Escribiendo mensaje ...')            
+            print(f'[*] Escribiendo mensaje ...')
+            time.sleep(1)
             caption_box.send_keys(graph_name.split('_')[1])
 
             # Enviar
