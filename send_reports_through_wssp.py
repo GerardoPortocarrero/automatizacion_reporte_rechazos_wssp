@@ -11,7 +11,6 @@ def get_attatchments(project_address):
     attachment_folder = Path(project_address)
     graphics_address = {}
 
-    # Eliminar archivos .png
     for attch in attachment_folder.glob('*.png'):
         graphics_address[attch.name] = os.path.join(project_address, attch.name)
 
@@ -26,11 +25,13 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
         print(f'[*] Abriendo Grupo de WSSP ({group_name})')
 
         driver.get(page_url)
-        print("[*] Esperando a que cargue la página")
+        print("[*] Esperando que WhatsApp Web cargue completamente...")
 
-        WebDriverWait(driver, 15) # 15 segundos para que se cargue la pagina
-        print("[*] Pagina cargada (15 seg de renderizado) ...")
-        time.sleep(15) # 15 segundos adicionales para renderizado de la pagina
+        # ✅ Esperar a que aparezca el buscador (indicador de carga completa)
+        WebDriverWait(driver, 40).until(
+            EC.presence_of_element_located((By.XPATH, "//div[@contenteditable='true'][@data-tab='3']"))
+        )
+        print("[✓] WhatsApp Web cargado.")
 
         # Buscar grupo
         search_box = driver.find_element(By.XPATH, "//div[@contenteditable='true'][@data-tab='3']")
@@ -39,37 +40,41 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
         search_box.send_keys(group_name)
         time.sleep(3)
 
-        # Hacer clic en el grupo
-        clip_button = driver.find_element(By.XPATH, f"//span[@title='{group_name}']")
+        # Esperar y hacer clic en el grupo
+        clip_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, f"//span[@title='{group_name}']"))
+        )
         clip_button.click()
         print(f"\n[✓] Click realizado en el grupo: '{group_name}'")
         time.sleep(3)
 
-        for graph_name, graph_address in graphics.items():            
+        for graph_name, graph_address in graphics.items():
             # Esperar hasta que el ícono del clip esté presente y visible            
             attach_button = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[@title='Adjuntar' and @type='button']"))
             )
             attach_button.click()
-            print(f"\n[✓] Click realizado en el boton de 'Adjuntar'")
+            print(f"\n[✓] Click realizado en el botón de 'Adjuntar'")
             time.sleep(2)
 
             # Esperar el input para cargar imagen
             image_input = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.XPATH, "//input[@accept='image/*,video/mp4,video/3gpp,video/quicktime']"))
             )
-            print(f'[*] Cargando imagen  ({graph_name}) ...')
+            print(f'[*] Cargando imagen ({graph_name}) ...')
             image_input.send_keys(graph_address)
             time.sleep(3)
 
-            # Escribir texto junto a la imagen
-            caption_box = driver.find_element(By.XPATH, "//div[@contenteditable='true' and @aria-label='Añade un comentario']")
+            # Esperar y escribir texto junto a la imagen
+            caption_box = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//div[@contenteditable='true' and @aria-label='Añade un comentario']"))
+            )
             print(f'[*] Escribiendo mensaje ...')
             time.sleep(1)
             caption_box.send_keys(graph_name.split('_')[1])
 
             # Enviar
-            send_button = WebDriverWait(driver, 5).until(
+            send_button = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[@role='button' and @aria-label='Enviar']"))
             )
             send_button.click()
@@ -81,7 +86,7 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
 
     print("'-----------------------------------------------------------------------'\n")
 
-# Captura de graficos de Power Bi por pagina
+# Captura de gráficos de Power BI por página
 def main(project_address, WSSP_CONFIF):
     options = Options()
     options.add_argument("--start-maximized")
