@@ -2,6 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import pandas as pd
+import numpy as np
 
 # Reporte de barras horizontal
 def horizontal_bar_graphic(
@@ -105,87 +106,98 @@ def _ensure_series(data, group_by, indicator, ascending=False):
 # ==============================
 def pareto_graphic(
         project_address,
-        data,          # Serie agregada (ideal) o DataFrame
+        data,
         date,
-        group_by,      # string para títulos/archivo
-        indicator,     # "Venta Perdida CF"
-        width=10,
-        height=7,
-        label_size=16,  # tamaño de ticks
-        fontsize=18,    # tamaño etiquetas de valor
-        bar_color="#D32F2F",
-        line_color="#FFC107"
+        group_by,
+        indicator,
+        width=11,
+        height=6,
+        label_size=12,
+        fontsize=11,
+        bar_color="#2196F3",   # Azul más intenso
+        line_color="#FF5722"   # Naranja fuerte para contraste
     ):
     try:
-        # Serie descendente (Pareto)
         s = _ensure_series(data, group_by, indicator, ascending=False)
         if s.empty:
             raise ValueError("Serie de datos vacía para pareto_graphic().")
 
         total = float(s.sum())
         cumperc = 100 * s.cumsum() / total
-        x = range(len(s))
+        x = np.arange(len(s))
 
-        fig, ax = plt.subplots(figsize=(width, height))
+        fig, ax = plt.subplots(figsize=(width, height), facecolor="white")
 
-        # Barras verticales con borde sutil
-        bars = ax.bar(x, s.values, color=bar_color, edgecolor="#333333", linewidth=0.5)
-
-        # Etiquetas de valor sobre barras
+        # --- Barras ---
+        bars = ax.bar(x, s.values, color=bar_color, alpha=0.85)
         for bar in bars:
             h = bar.get_height()
-            ax.annotate(
-                f"{h:,.1f} CF",
-                xy=(bar.get_x() + bar.get_width()/2, h),
-                xytext=(0, 4),
-                textcoords="offset points",
-                ha="center", va="bottom",
-                fontsize=fontsize, color="black"
-            )
+            if h > 0:
+                ax.annotate(f"{h:,.0f}",
+                            xy=(bar.get_x() + bar.get_width()/2, h),
+                            xytext=(0, 4),
+                            textcoords="offset points",
+                            ha="center", va="bottom",
+                            fontsize=label_size+4,
+                            fontweight="bold",
+                            color="#222")
 
-        # Línea acumulada (%)
+        # --- Línea de Pareto ---
         ax2 = ax.twinx()
-        ax2.plot(list(x), cumperc.values, color=line_color, marker="o", linewidth=2)
-        ax2.set_ylim(0, 110)
-        ax2.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:.0f}%"))
+        ax2.plot(x, cumperc.values,
+                 marker="o", markersize=7,
+                 color=line_color, linewidth=2.5)
+        ax2.set_ylim(0, 105)
 
-        # Estética general
-        for spine in ["top", "right", "left", "bottom"]:
-            ax.spines[spine].set_visible(False)
-        ax.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.3)
+        # % solo en puntos clave
+        key_points = [0, np.argmax(cumperc >= 80), len(cumperc)-1]
+        for i in key_points:
+            val = cumperc.iloc[i]
+            ax2.annotate(f"{val:.1f}%",
+                         xy=(x[i], val),
+                         xytext=(0, 6),
+                         textcoords="offset points",
+                         ha="center", va="bottom",
+                         fontsize=label_size+5,
+                         fontweight="bold",
+                         color=line_color)
 
-        ax.tick_params(axis='x', labelsize=label_size)
-        ax.tick_params(axis='y', labelsize=label_size)
-        ax2.tick_params(axis='y', labelsize=label_size)
+        # --- Quitar ejes Y ---
+        ax.yaxis.set_visible(False)
+        ax2.yaxis.set_visible(False)
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+        for spine in ax2.spines.values():
+            spine.set_visible(False)
 
-        # Nombres de categorías en X
-        ax.set_xticks(list(x))
-        ax.set_xticklabels([str(k) for k in s.index], rotation=35, ha='right')
-
-        # Formato eje Y (CF)
-        ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
-
-        # Cuadro resumen
-        ax.text(
-            0.80, 0.20,
-            f"{date}\n\nTotal: {total:,.1f} CF",
-            transform=ax.transAxes,
-            fontsize=label_size,
-            va='top', ha='left',
-            bbox=dict(facecolor='#f9f9f9', edgecolor='gray', boxstyle='round,pad=0.4', alpha=0.95)
+        # --- Eje X ---
+        ax.set_xticks(x)
+        ax.set_xticklabels(
+            s.index,
+            rotation=30,
+            ha="right",
+            fontsize=label_size+1,
+            color="#111"
         )
 
-        # Limpieza de títulos (sin labels innecesarios)
-        ax.set_xlabel("")
-        ax.set_ylabel("")
-        ax2.set_ylabel("")
+        # --- Grid discreto ---
+        ax.grid(axis="y", linestyle="--", linewidth=0.6, alpha=0.25, color="#aaa")
 
-        plt.tight_layout(rect=[0, 0, 0.95, 0.93], pad=2)
+        # --- Título (menos importante que etiquetas) ---
+        ax.set_title(
+            f"{group_by} – {date}",
+            fontsize=label_size,  # mismo tamaño que etiquetas
+            color="#555",
+            pad=10,
+            fontweight="normal"
+        )
 
-        filename = f"pareto_{group_by}_{indicator}.png"
-        #plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches='tight')
-        #plt.close(fig)
-        plt.show()
+        # --- Ajustes de margenes ---
+        plt.subplots_adjust(top=0.88, bottom=0.24, left=0.06, right=0.98)
+
+        filename = f'pareto_{group_by}_{indicator}.png'
+        plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches='tight')
+        plt.close(fig)
 
     except Exception as e:
         print(f"❌ Error en pareto_graphic(): {e}")
@@ -214,51 +226,71 @@ def donut_graphic(
         labels = [str(i) for i in s.index]
         values = s.values
 
-        # Colores por defecto (paleta cálida sobria)
+        # Colores → si no pasan, usamos un degradado cálido (Oranges)
         if not colors or len(colors) < len(values):
-            colors = ["#F57C00", "#FF9800", "#FFB74D", "#FFE0B2", "#795548", "#9E9E9E"] * 5
+            cmap = plt.cm.Oranges
+            colors = [cmap(i/len(values)) for i in range(len(values))]
 
         fig, ax = plt.subplots(figsize=(width, height))
 
         # Donut
         wedges, texts, autotexts = ax.pie(
             values,
-            labels=labels,
-            autopct=lambda pct: (f"{pct:.1f}%" if pct >= 3 else ""),  # evitar ruido <3%
+            labels=None,  # 🔹 quitamos para usar leyenda aparte
+            autopct=lambda pct: (f"{pct:.1f}%" if pct >= 3 else ""), 
             startangle=90,
-            textprops=dict(color="#111", fontsize=fontsize-2),
+            textprops=dict(color="black", fontsize=fontsize-3),
             colors=colors[:len(values)],
-            wedgeprops=dict(width=0.35, edgecolor="#333333", linewidth=0.5)
+            wedgeprops=dict(width=0.35, edgecolor="white", linewidth=1)
         )
         ax.set_aspect('equal')
 
-        # Centro con total
+        # Centro con total destacado
         ax.text(
-            0, 0,
-            f"Total\n{total:,.1f} CF",
-            ha='center', va='center',
-            fontsize=fontsize, color="#111", weight="bold"
+            0, 0.05,
+            f"{total:,.0f}",
+            ha="center", va="center",
+            fontsize=fontsize+6, weight="bold", color="#222"
+        )
+        ax.text(
+            0, -0.15,
+            f"{indicator}",
+            ha="center", va="center",
+            fontsize=fontsize-2, color="#555"
         )
 
-        # Cuadro resumen (fecha)
-        ax.text(
-            0.80, 0.20,
-            f"{date}",
-            transform=ax.transAxes,
-            fontsize=fontsize-2,
-            va='top', ha='left',
-            bbox=dict(facecolor='#f9f9f9', edgecolor='gray', boxstyle='round,pad=0.4', alpha=0.95)
+        # Título arriba
+        fig.suptitle(
+            f"{group_by} - {date}",
+            fontsize=fontsize+4,
+            weight="bold",
+            color="#333",
+            y=0.98
+        )
+
+        # Leyenda estilizada
+        ax.legend(
+            wedges,
+            [f"{l}  ({v:,.0f})" for l, v in zip(labels, values)],
+            title="Detalle",
+            loc="center left",
+            bbox_to_anchor=(1, 0, 0.3, 1),
+            fontsize=fontsize-3,
+            title_fontsize=fontsize-2,
+            frameon=True,
+            facecolor="white",
+            edgecolor="gray"
         )
 
         # Spines off
         for spine in ax.spines.values():
             spine.set_visible(False)
 
-        plt.tight_layout(rect=[0, 0, 0.95, 0.93], pad=2)
+        plt.tight_layout(rect=[0, 0, 0.9, 0.93])
 
         filename = f"donut_{group_by}_{indicator}.png"
-        #plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches='tight')
-        #plt.close(fig)
+        # plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches="tight")
+        # plt.close(fig)
         plt.show()
 
     except Exception as e:

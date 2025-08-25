@@ -16,13 +16,13 @@ def parse_date(document, df):
 # ==========================
 # REPORTES ESPECIALIZADOS
 # ==========================
+
 # --- MOTIVO DE ANULACIÓN ---
 # Muchos motivos → Pareto
-def report_motivo(project_address, df, date):
-    print('motivo')
+def report_motivo(project_address, df, date, group_by):
     indicator = "Venta Perdida CF"
     data = (
-        df.groupby("Motivo de anulación")[indicator]
+        df.groupby(group_by)[indicator]
         .sum()
         .sort_values(ascending=False)
     )
@@ -37,22 +37,20 @@ def report_motivo(project_address, df, date):
         project_address,
         final_data,
         date,
-        "Motivo de anulación",
+        group_by,
         indicator,
         width=10,
         height=7,
         label_size=16,
         fontsize=18,
-        bar_color="#D32F2F",   # Rojo corporativo
-        line_color="#FFC107"   # Amarillo contraste
     )
 
 # --- TRANSPORTISTA ---
 # Número limitado (≤10) → Donut
-def report_transportista(project_address, df, date):
+def report_transportista(project_address, df, date, group_by):
     indicator = "Venta Perdida CF"
     data = (
-        df.groupby("Transportista")[indicator]
+        df.groupby(group_by)[indicator]
         .sum()
         .sort_values(ascending=False)
     )
@@ -61,7 +59,7 @@ def report_transportista(project_address, df, date):
         project_address,
         data,
         date,
-        "Transportista",
+        group_by,
         indicator,
         width=7,
         height=7,
@@ -71,10 +69,10 @@ def report_transportista(project_address, df, date):
 
 # --- RUTA TRONCAL DINÁMICO ---
 # Entre 10–15 categorías → Lollipop
-def report_ruta(project_address, df, date):
+def report_ruta(project_address, df, date, group_by):
     indicator = "Venta Perdida CF"
     data = (
-        df.groupby("Ruta Troncal Dinámico")[indicator]
+        df.groupby(group_by)[indicator]
         .sum()
         .sort_values(ascending=False)
     )
@@ -83,7 +81,7 @@ def report_ruta(project_address, df, date):
         project_address,
         data,
         date,
-        "Ruta Troncal Dinámico",
+        group_by,
         indicator,
         width=12,
         height=7,
@@ -93,7 +91,7 @@ def report_ruta(project_address, df, date):
 
 # --- CLIENTE ---
 # Demasiados clientes → Top N + "Otros" en barras horizontales
-def report_cliente(project_address, df, date, top_n=10):
+def report_cliente(project_address, df, date, group_by, top_n=10):
     # CONFIGURACIÓN
     bar_width = 12
     bar_height = 7
@@ -101,7 +99,6 @@ def report_cliente(project_address, df, date, top_n=10):
     bar_fontsize = 14
     bar_color = "#1976D2"  # azul para clientes
 
-    group_by = "Cliente"
     indicator = "Venta Perdida CF"
 
     # --- calcular top N clientes con mayor rechazo ---
@@ -136,14 +133,14 @@ def report_cliente(project_address, df, date, top_n=10):
 def main(project_address, df, document, date):
     importlib.reload(myg)
 
-    if "Motivo de anulación" in document["group_by"]:
-        report_motivo(project_address, df, date)
+    # if "Motivo de anulación" in document["group_by"]:
+    #     report_motivo(project_address, df, date, "Motivo de anulación")
 
-    if "Transportista" in document["group_by"]:
-        report_transportista(project_address, df, date)
+    if "Código Transportista" in document["group_by"]:
+        report_transportista(project_address, df, date, "Código Transportista")
 
-    if "Ruta Troncal Dinámico" in document["group_by"]:
-        report_ruta(project_address, df, date)
+    # if "Ruta Troncal Dinámico" in document["group_by"]:
+    #     report_ruta(project_address, df, date, "Ruta Troncal Dinámico")
 
-    if "Cliente" in document["group_by"]:
-        report_cliente(project_address, df, date)
+    # if "Cliente" in document["group_by"]:
+    #     report_cliente(project_address, df, date, "Cliente")
