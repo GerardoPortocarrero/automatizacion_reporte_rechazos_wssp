@@ -58,9 +58,7 @@ def get_specific_date(df, file, time_option):
         ended_date = pd.to_datetime(str(ended_date), format='%Y-%m-%d')
         df = df[(df[file['date']] >= started_date) & (df['Día'] <= ended_date)]
     elif time_option == 5:
-        date = input("\n>> Año-Mes-Dia (yyyy-m-d): ")
-        fecha_corte = pd.to_datetime(str(date), format='%Y-%m-%d')
-        df = df[df[file['date']] >= fecha_corte]
+        exit()
 
     return df, date
 
