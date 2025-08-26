@@ -74,8 +74,8 @@ def pareto_graphic(
         # --- Línea de Pareto ---
         ax2 = ax.twinx()
         ax2.plot(x, cumperc.values, marker="o", markersize=7,
-                 color=line_color, linewidth=2)
-        ax2.set_ylim(0, 145)
+                 color=line_color, linewidth=1)
+        ax2.set_ylim(5, 150)
 
         key_points = [0, np.argmax(cumperc >= 85), len(cumperc)-1]
         for i in key_points:
@@ -84,7 +84,7 @@ def pareto_graphic(
                          xy=(x[i], val),
                          xytext=(0, 6), textcoords="offset points",
                          ha="center", va="bottom",
-                         fontsize=STYLE["labels"]["fontsize"]+1,
+                         fontsize=STYLE["labels"]["fontsize"]+3,
                          color=line_color, fontweight="normal")
 
         # --- Quitar ejes Y ---
@@ -235,8 +235,6 @@ def lollipop_graphic(
         if s.empty:
             raise ValueError("Serie de datos vacía para lollipop_graphic().")
 
-        total = float(s.sum())
-
         fig, ax = plt.subplots(figsize=(width, height))
         ax.set_facecolor("white")
 
@@ -245,7 +243,7 @@ def lollipop_graphic(
                 markeredgecolor="white", markeredgewidth=1)
 
         for x, y in zip(s.values, s.index):
-            ax.annotate(f"{x:,.0f} CF", xy=(x, y), xytext=(6, -2),
+            ax.annotate(f"{x:,.0f} CF", xy=(x, y), xytext=(12, 0),
                         textcoords="offset points", ha="left", va="center", **STYLE["labels"])
 
         for spine in ["top", "right", "left", "bottom"]:
@@ -280,69 +278,95 @@ def horizontal_bar_graphic(
         bar_height,
         bar_label,
         bar_fontsize,
-        bar_color
+        bar_color=None
     ):
     try:
-        group_by_indicator = df.groupby(group_by)[indicator].sum().sort_values(ascending=True)
+        import matplotlib.pyplot as plt
+        import matplotlib.ticker as mticker
+        import os
 
-        fig, ax = plt.subplots(figsize=(bar_width, bar_height))
+        # --- Paleta Coca-Cola orientada a la marca / productos ---
+        coca_palette = [
+            "#E41A1C",  # Coca-Cola (rojo clásico)
+            "#FFD700",  # Inca Kola (amarillo dorado)
+            "#FF7F0E",  # Fanta (naranja)
+            "#4CAF50",  # Sprite (verde lima)
+            "#1565C0",  # Powerade (azul)
+            "#1C1C1C",  # Coca-Cola Zero (negro)
+            "#B0BEC5",  # Coca-Cola Light (gris claro)
+        ]
 
-        # Elegante color Coca-Cola rojo + borde gris tenue
+        # --- datos agregados ordenados ascendente ---
+        group_by_indicator = (
+            df.groupby(group_by)[indicator]
+              .sum()
+              .sort_values(ascending=True)
+        )
+
+        fig, ax = plt.subplots(figsize=(bar_width, bar_height), facecolor="white")
+
+        n = len(group_by_indicator)
+
+        # --- colores dinámicos ---
+        if bar_color is None:
+            colors = [coca_palette[i % len(coca_palette)] for i in range(n)]
+        else:
+            if isinstance(bar_color, (list, tuple)):
+                colors = bar_color[:n]
+            else:
+                colors = [bar_color] * n
+
+        # --- barras horizontales ---
         bars = ax.barh(
             group_by_indicator.index,
             group_by_indicator.values,
-            color=bar_color,  # puede ser "#D52B1E" u otro rojo Coca-Cola
-            edgecolor='#333333',
-            linewidth=0.5
+            color=colors,
+            edgecolor='none',
+            height=0.7
         )
 
-        # Etiquetas dentro o al lado
+        # --- anotaciones (valores) ---
         for bar in bars:
             width = bar.get_width()
             ax.annotate(
                 f'{width:,.1f} CF',
                 xy=(width, bar.get_y() + bar.get_height() / 2),
-                xytext=(5, 0),
+                xytext=(6, 0),
                 textcoords='offset points',
                 ha='left', va='center',
                 fontsize=bar_fontsize,
-                color='black'
+                fontweight='normal',
+                color='#222'
             )
 
-        # Cuadro resumen discreto
-        total = group_by_indicator.sum()
-        ax.text(
-            0.80, 0.20,
-            f"{date}\n\nTotal: {total:,.1f} CF",
-            transform=ax.transAxes,
-            fontsize=bar_label,
-            va='top', ha='left',
-            bbox=dict(facecolor='#f9f9f9', edgecolor='gray', boxstyle='round,pad=0.4', alpha=0.95)
+        # --- título estandarizado ---
+        fig.suptitle(
+            f"{group_by} • {date}",
+            **STYLE["title"],   # aplica fontsize=14, bold, color="#222"
+            y=0.94              # reduce espacio arriba (igual que donut y lollipop)
         )
+        # --- estética limpia ---
+        for spine in ["top", "right", "left", "bottom"]:
+            ax.spines[spine].set_visible(False)
 
-        # Estética general
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['left'].set_visible(False)
-        ax.spines['bottom'].set_visible(False)
-
-        ax.tick_params(axis='x', labelsize=bar_label)
-        ax.tick_params(axis='y', labelsize=bar_label)
-
-        ax.grid(axis='x', linestyle='--', linewidth=0.5, alpha=0.3)
-        ax.set_xlabel("")  # sin título innecesario
-        ax.set_ylabel("")
-
+        # ticks
+        ax.tick_params(axis='y', labelsize=bar_label, colors="#444")
+        ax.tick_params(axis='x', labelbottom=False)
         ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{x:,.0f}'))
 
-        # Margen ajustado para WhatsApp (sin cortar texto)
-        plt.tight_layout(rect=[0, 0, 0.95, 0.93], pad=2)
+        # grid sutil solo en X
+        ax.grid(axis='x', linestyle='--', linewidth=0.5, alpha=0.25, color='#aaa')
 
-        # Guardar con alta calidad
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+
+        # --- layout sin espacio extra bajo el título ---
+        plt.tight_layout(rect=[0, 0, 0.95, 0.95], pad=0)
+
         filename = f'barh_{group_by}_{indicator}.png'
-        #plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches='tight')
-        plt.show()
+        plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches='tight')
+        plt.close(fig)
 
     except Exception as e:
         print(f'Cantidad de datos: {len(df)}')
-        print('❌ Error en la generación del gráfico:', e)
+        print('❌ Error en la generación del gráfico:', e)  

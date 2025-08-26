@@ -97,28 +97,27 @@ def report_ruta(project_address, df, date, group_by):
 # --- CLIENTE ---
 # Demasiados clientes → Top N + "Otros" en barras horizontales
 def report_cliente(project_address, df, date, group_by, top_n=10):
-    # CONFIGURACIÓN
+    # CONFIGURACIÓN (estandarizada)
     bar_width = 12
     bar_height = 7
-    bar_label = 14
-    bar_fontsize = 14
-    bar_color = "#1976D2"  # azul para clientes
+    bar_label = 14       # ticks y títulos
+    bar_fontsize = 14    # anotaciones sobre barras
+    bar_color = None     # -> Usar paleta Coca-Cola automáticamente
 
     indicator = "Venta Perdida CF"
 
-    # --- calcular top N clientes con mayor rechazo ---
+    # --- calcular top N ---
     top_clientes = (
         df.groupby(group_by)[indicator]
-        .sum()
-        .sort_values(ascending=False)
-        .head(top_n)
-        .index
+          .sum()
+          .sort_values(ascending=False)
+          .head(top_n)
+          .index
     )
 
-    # --- filtrar df solo con esos clientes ---
     df_top = df[df[group_by].isin(top_clientes)]
 
-    # --- llamada a la función de gráfico ---
+    # --- gráfico ---
     myg.horizontal_bar_graphic(
         project_address,
         df_top,
