@@ -55,16 +55,25 @@ def report_transportista(project_address, df, date, group_by):
         .sort_values(ascending=False)
     )
 
+    colors = [
+        "#E41A1C",  # Coca-Cola
+        "#FF7F00",  # Fanta
+        "#4CAF50",  # Sprite
+        "#1565C0",  # Powerade
+        "#B0BEC5",  # Coca-Cola Light
+        "#FDCE4A"   # Coca-Cola Zero
+    ]
+
     myg.donut_graphic(
         project_address,
         data,
         date,
         group_by,
         indicator,
+        colors,
         width=7,
         height=7,
         fontsize=16,
-        colors=["#F57C00", "#FF9800", "#FFB74D", "#FFE0B2"]  # Gama cálida
     )
 
 # --- RUTA TRONCAL DINÁMICO ---
@@ -133,8 +142,8 @@ def report_cliente(project_address, df, date, group_by, top_n=10):
 def main(project_address, df, document, date):
     importlib.reload(myg)
 
-    # if "Motivo de anulación" in document["group_by"]:
-    #     report_motivo(project_address, df, date, "Motivo de anulación")
+    if "Motivo de anulación" in document["group_by"]:
+        report_motivo(project_address, df, date, "Motivo de anulación")
 
     if "Código Transportista" in document["group_by"]:
         report_transportista(project_address, df, date, "Código Transportista")

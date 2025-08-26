@@ -112,10 +112,10 @@ def pareto_graphic(
         indicator,
         width=11,
         height=6,
-        label_size=12,
+        label_size=11,
         fontsize=11,
-        bar_color="#2196F3",   # Azul más intenso
-        line_color="#FF5722"   # Naranja fuerte para contraste
+        bar_color="#E41A1C",   # Rojo Coca-Cola
+        line_color="#1C1C1C"   # Negro Coca-Cola Zero
     ):
     try:
         s = _ensure_series(data, group_by, indicator, ascending=False)
@@ -133,24 +133,24 @@ def pareto_graphic(
         for bar in bars:
             h = bar.get_height()
             if h > 0:
-                ax.annotate(f"{h:,.0f}",
+                ax.annotate(f"{h:,.0f} CF",
                             xy=(bar.get_x() + bar.get_width()/2, h),
                             xytext=(0, 4),
                             textcoords="offset points",
                             ha="center", va="bottom",
-                            fontsize=label_size+4,
-                            fontweight="bold",
+                            fontsize=label_size,
+                            fontweight="normal",
                             color="#222")
 
         # --- Línea de Pareto ---
         ax2 = ax.twinx()
         ax2.plot(x, cumperc.values,
                  marker="o", markersize=7,
-                 color=line_color, linewidth=2.5)
-        ax2.set_ylim(0, 105)
+                 color=line_color, linewidth=2)
+        ax2.set_ylim(0, 145)
 
         # % solo en puntos clave
-        key_points = [0, np.argmax(cumperc >= 80), len(cumperc)-1]
+        key_points = [0, np.argmax(cumperc >= 85), len(cumperc)-1]
         for i in key_points:
             val = cumperc.iloc[i]
             ax2.annotate(f"{val:.1f}%",
@@ -158,8 +158,8 @@ def pareto_graphic(
                          xytext=(0, 6),
                          textcoords="offset points",
                          ha="center", va="bottom",
-                         fontsize=label_size+5,
-                         fontweight="bold",
+                         fontsize=label_size+2,
+                         fontweight="normal",
                          color=line_color)
 
         # --- Quitar ejes Y ---
@@ -185,7 +185,7 @@ def pareto_graphic(
 
         # --- Título (menos importante que etiquetas) ---
         ax.set_title(
-            f"{group_by} – {date}",
+            f"{group_by} • {date}",
             fontsize=label_size,  # mismo tamaño que etiquetas
             color="#555",
             pad=10,
@@ -207,14 +207,14 @@ def pareto_graphic(
 # ==============================
 def donut_graphic(
         project_address,
-        data,          # Serie agregada (ideal) o DataFrame
+        data,
         date,
         group_by,
         indicator,
-        width=7,
+        colors,
+        width=8,
         height=7,
         fontsize=16,
-        colors=None
     ):
     try:
         # Serie descendente
@@ -223,75 +223,114 @@ def donut_graphic(
             raise ValueError("Serie de datos vacía para donut_graphic().")
 
         total = float(s.sum())
-        labels = [str(i) for i in s.index]
+        labels = [str(i).split('.')[0][-4:] for i in s.index]
         values = s.values
 
-        # Colores → si no pasan, usamos un degradado cálido (Oranges)
-        if not colors or len(colors) < len(values):
-            cmap = plt.cm.Oranges
+        # Colores
+        if not colors:
+            cmap = plt.cm.get_cmap("tab20")
             colors = [cmap(i/len(values)) for i in range(len(values))]
+        elif len(colors) < len(values):
+            cmap = plt.cm.get_cmap("tab20")
+            extra_colors = [cmap(i/len(values)) for i in range(len(values) - len(colors))]
+            colors = colors + extra_colors
+
+        # --- Separar grandes y pequeñas ---
+        min_frac_for_inside = 0.05
+        main_labels, main_values = [], []
+        small_labels, small_values = [], []
+
+        for lbl, val in zip(labels, values):
+            if val / total >= min_frac_for_inside:
+                main_labels.append(lbl)
+                main_values.append(val)
+            else:
+                small_labels.append(lbl)
+                small_values.append(val)
+
+        # Crear resumen de pequeños
+        summary_total = 0
+        summary_lines = []
+        if small_values:
+            summary_total = sum(small_values)
+            for l, v in zip(small_labels, small_values):
+                summary_lines.append(f"{l}: {v:,.0f} CF")
+            main_labels.append("Otros")
+            main_values.append(summary_total)
 
         fig, ax = plt.subplots(figsize=(width, height))
-
-        # Donut
-        wedges, texts, autotexts = ax.pie(
-            values,
-            labels=None,  # 🔹 quitamos para usar leyenda aparte
-            autopct=lambda pct: (f"{pct:.1f}%" if pct >= 3 else ""), 
+        wedges, _ = ax.pie(
+            main_values,
+            labels=None,
             startangle=90,
-            textprops=dict(color="black", fontsize=fontsize-3),
-            colors=colors[:len(values)],
-            wedgeprops=dict(width=0.35, edgecolor="white", linewidth=1)
+            colors=colors[:len(main_values)],
+            wedgeprops=dict(width=0.38, edgecolor="white", linewidth=1),
         )
         ax.set_aspect('equal')
 
-        # Centro con total destacado
-        ax.text(
-            0, 0.05,
-            f"{total:,.0f}",
-            ha="center", va="center",
-            fontsize=fontsize+6, weight="bold", color="#222"
-        )
-        ax.text(
-            0, -0.15,
-            f"{indicator}",
-            ha="center", va="center",
-            fontsize=fontsize-2, color="#555"
-        )
+        # --- Etiquetas dentro/fuera ---
+        for i, wedge in enumerate(wedges):
+            ang = (wedge.theta2 + wedge.theta1) / 2
+            theta_rad = np.deg2rad(ang)
+            r = 0.38 / 2 + 0.62
+            x = np.cos(theta_rad) * r
+            y = np.sin(theta_rad) * r
 
-        # Título arriba
-        fig.suptitle(
-            f"{group_by} - {date}",
-            fontsize=fontsize+4,
-            weight="bold",
-            color="#333",
-            y=0.98
-        )
+            if main_labels[i] == "Otros":
+                # Solo texto "Otros" afuera, más cerca de la dona
+                ax.annotate("Otros", xy=(x, y),
+                            xytext=(1.15*np.cos(theta_rad), 1.15*np.sin(theta_rad)),
+                            ha="center", va="center", fontsize=fontsize-3,
+                            color="#222",
+                            arrowprops=dict(arrowstyle="-", lw=0.6, color="#bbb",
+                                            shrinkA=0, shrinkB=0))
+            else:
+                # Etiquetas normales dentro
+                ax.text(x, y, f"{main_labels[i]}", ha="center", va="center",
+                        fontsize=fontsize-3, weight="normal", color="#222")
 
-        # Leyenda estilizada
-        ax.legend(
-            wedges,
-            [f"{l}  ({v:,.0f})" for l, v in zip(labels, values)],
-            title="Detalle",
-            loc="center left",
-            bbox_to_anchor=(1, 0, 0.3, 1),
-            fontsize=fontsize-3,
-            title_fontsize=fontsize-2,
-            frameon=True,
-            facecolor="white",
-            edgecolor="gray"
-        )
+        # --- Valores afuera ---
+        for i, wedge in enumerate(wedges):
+            if main_labels[i] == "Otros":
+                continue  # ⛔️ saltamos el valor de "Otros"
+            ang = (wedge.theta2 + wedge.theta1) / 2
+            x = np.cos(np.deg2rad(ang))
+            y = np.sin(np.deg2rad(ang))
+            ax.annotate(f"{main_values[i]:,.0f} CF", xy=(x, y), xytext=(1.25*x, 1.25*y),
+                        ha="center", va="center", fontsize=fontsize-3,
+                        weight="normal", color="#333",
+                        arrowprops=dict(arrowstyle="-", lw=0.6, color="#bbb",
+                                        shrinkA=0, shrinkB=0))
 
-        # Spines off
+        # --- Centro con total ---
+        ax.text(0, 0.05, f"{total:,.0f}", ha="center", va="center",
+                fontsize=fontsize+4, weight="bold", color="#222")
+        ax.text(0, -0.10, f"{indicator}", ha="center", va="center",
+                fontsize=fontsize-3, color="#555")
+
+        # --- Título ---
+        fig.suptitle(f"{group_by} • {date}", fontsize=fontsize-2,
+                     color="#333", fontweight="normal", y=0.96)
+
+        # --- Resumen de pequeños como caja lateral ---
+        if summary_lines:
+            resumen = "Otros:\n" + "\n".join(summary_lines) + f"\nTotal {summary_total:,.0f} CF"
+            # 🔹 Mover el cuadro a la esquina inferior derecha
+            fig.text(
+                0.95, 0.1, resumen,
+                ha="right", va="bottom",
+                fontsize=fontsize-2, color="#222",
+                bbox=dict(facecolor="white", edgecolor="none", linewidth=0, boxstyle="square,pad=0.3")
+            )
+
+        # Quitar bordes
         for spine in ax.spines.values():
             spine.set_visible(False)
 
-        plt.tight_layout(rect=[0, 0, 0.9, 0.93])
-
+        plt.subplots_adjust(top=0.90, bottom=0.12, left=0.08, right=0.85)
         filename = f"donut_{group_by}_{indicator}.png"
-        # plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches="tight")
-        # plt.close(fig)
-        plt.show()
+        plt.savefig(os.path.join(project_address, filename), dpi=300, bbox_inches="tight")
+        plt.close(fig)
 
     except Exception as e:
         print(f"❌ Error en donut_graphic(): {e}")
