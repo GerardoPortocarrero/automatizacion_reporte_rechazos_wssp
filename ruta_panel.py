@@ -41,8 +41,6 @@ def report_motivo(project_address, df, date, group_by):
         indicator,
         width=10,
         height=7,
-        label_size=16,
-        fontsize=18,
     )
 
 # --- TRANSPORTISTA ---
@@ -73,7 +71,6 @@ def report_transportista(project_address, df, date, group_by):
         colors,
         width=7,
         height=7,
-        fontsize=16,
     )
 
 # --- RUTA TRONCAL DINÁMICO ---
@@ -94,7 +91,6 @@ def report_ruta(project_address, df, date, group_by):
         indicator,
         width=12,
         height=7,
-        fontsize=16,
         color="#B71C1C"  # Rojo oscuro fuerte
     )
 
@@ -148,8 +144,8 @@ def main(project_address, df, document, date):
     if "Código Transportista" in document["group_by"]:
         report_transportista(project_address, df, date, "Código Transportista")
 
-    # if "Ruta Troncal Dinámico" in document["group_by"]:
-    #     report_ruta(project_address, df, date, "Ruta Troncal Dinámico")
+    if "Ruta Troncal Dinámico" in document["group_by"]:
+        report_ruta(project_address, df, date, "Ruta Troncal Dinámico")
 
-    # if "Cliente" in document["group_by"]:
-    #     report_cliente(project_address, df, date, "Cliente")
+    if "Cliente" in document["group_by"]:
+        report_cliente(project_address, df, date, "Cliente")
