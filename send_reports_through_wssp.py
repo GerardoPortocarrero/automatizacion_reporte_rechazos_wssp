@@ -49,10 +49,13 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
         time.sleep(3)
 
         for graph_name, graph_address in graphics.items():
-            # Esperar hasta que el ícono del clip esté presente y visible            
-            attach_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//button[@title='Adjuntar' and @type='button']"))
+            # Esperar hasta que el ícono del clip esté presente y visible
+            attach_button = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[@role='button' and @aria-label='Adjuntar']"))
             )
+            # attach_button = WebDriverWait(driver, 10).until(
+            #     EC.element_to_be_clickable((By.XPATH, "//button[@title='Adjuntar' and @type='button']"))
+            # )
             attach_button.click()
             print(f"\n[✓] Click realizado en el botón de 'Adjuntar'")
             time.sleep(2)
