@@ -69,8 +69,11 @@ def send_mssg_to_chat(options, page_url, group_name, graphics):
             time.sleep(3)
 
             # Esperar y escribir texto junto a la imagen
-            caption_box = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, "//div[@contenteditable='true' and @aria-label='Añade un comentario']"))
+            # caption_box = WebDriverWait(driver, 10).until(
+            #     EC.presence_of_element_located((By.XPATH, "//div[@contenteditable='true' and @aria-label='Añade un comentario']"))
+            # )
+            caption_box = WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located((By.XPATH, "//div[@contenteditable='true' and @aria-label='Escribe un mensaje']"))
             )
             print(f'[*] Escribiendo mensaje ...')
             time.sleep(1)
